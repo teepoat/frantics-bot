@@ -1,4 +1,7 @@
+import time
 from typing import Final
+import requests
+import re
 from telegram import Update
 from telegram.ext import Application, MessageHandler, filters, ContextTypes
 from typing import Optional
@@ -16,6 +19,14 @@ CHAT_ID: Final = int(os.environ.get("CHAT_ID"))
 
 CHECKPOINT_PATH: Final = "models/seq2seq/checkpoint/150_checkpoint.tar"
 
+romantiki_gif_id = "CgACAgIAAxkBAAE4zMlojLmMwqrxG5e2rnYS2f9_PZZgVwACL2oAAjbWyUqiyR5II6u6YDYE"
+bezumtsi_gif_id = "CgACAgIAAxkBAAE4zMtojLmiH_CGW5cT7G0QVXHR7D4g6wAC53UAApkBmEmM-VxqunRc6zYE"
+
+last_maxim_insult = 1.0
+last_gif_sent = 1.0
+maxim_insult_cooldown = 5.0
+gif_sent_cooldown = 5.0
+
 torch.manual_seed(0)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -25,17 +36,39 @@ chatbot.eval_mode()
 
 
 def handle_response(text: str) -> Optional[str]:
-    response_chance = 1.0
+    response_chance = 0.02
     if random.random() < response_chance:
         return chatbot(text)
     return None
 
 
+def edit_response(text: str) -> str:
+    text = re.sub(r'\s+([,.!?;])\s+', r'\1 ', text)
+
+    return text
+
+
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.message.chat_id == CHAT_ID:
-        text: str = update.message.text.replace(BOT_USERNAME, '').strip().lower()
-        response: Optional[str] = handle_response(text)
-        if response:
+        response: Optional[str] = ""
+        global last_maxim_insult, last_gif_sent
+        if update.message.from_user.username == "WhoReadThisWillDie" and \
+                time.time() - last_maxim_insult >= maxim_insult_cooldown:
+            response = "Максим, иди нахуй"
+            last_maxim_insult = time.time()
+        elif "роман" in update.message.text.lower() and \
+                time.time() - last_gif_sent >= gif_sent_cooldown:
+            await context.bot.send_animation( chat_id=update.message.chat_id, animation=romantiki_gif_id)
+            last_gif_sent = time.time()
+        elif "безу" in update.message.text.lower() and \
+                time.time() - last_gif_sent >= gif_sent_cooldown:
+            await context.bot.send_animation(chat_id=update.message.chat_id, animation=bezumtsi_gif_id)
+            last_gif_sent = time.time()
+        else:
+            text = update.message.text.replace(BOT_USERNAME, '').strip().lower()
+            response = edit_response(handle_response(text))
+
+        if response != "":
             await context.bot.sendMessage(update.message.chat_id, response, reply_to_message_id=update.message.id)
 
 
@@ -47,6 +80,8 @@ async def error(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 def main() -> None:
     """Run the bot."""
+    requests.post(f"https://api.telegram.org/bot{TOKEN}/getUpdates?offset=-1")
+
     application = Application.builder().token(TOKEN).build()
 
     application.add_handler(MessageHandler(filters.TEXT, handle_message))
