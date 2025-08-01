@@ -8,7 +8,6 @@ from dotenv import load_dotenv
 from models.seq2seq.model import Seq2SeqChatbot
 import torch
 
-
 load_dotenv()
 
 TOKEN: Final = os.environ.get("TOKEN")
@@ -20,9 +19,10 @@ CHECKPOINT_PATH: Final = "models/seq2seq/checkpoint/150_checkpoint.tar"
 torch.manual_seed(0)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-chatbot = Seq2SeqChatbot(500, 2, 2, 0.1, device)
+chatbot = Seq2SeqChatbot(500, 8856, 2, 2, 0.1, device)
 chatbot.load_checkpoint(CHECKPOINT_PATH)
 chatbot.eval_mode()
+
 
 def handle_response(text: str) -> Optional[str]:
     response_chance = 1.0
@@ -36,13 +36,14 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         text: str = update.message.text.replace(BOT_USERNAME, '').strip().lower()
         response: Optional[str] = handle_response(text)
         if response:
-            await context.bot.sendMessage(update.message.chat_id, response)
+            await context.bot.sendMessage(update.message.chat_id, response, reply_to_message_id=update.message.id)
 
 
 async def error(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print(f"{update.message.from_user.username} in {update.message.chat.type} "
           f"chat caused error \"{context.error}\"\n"
           f"{update}\"")
+
 
 def main() -> None:
     """Run the bot."""
