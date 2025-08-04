@@ -22,9 +22,7 @@ CHECKPOINT_PATH: Final = "models/seq2seq/checkpoint/150_checkpoint.tar"
 romantiki_gif_id = "CgACAgIAAxkBAAE4zMlojLmMwqrxG5e2rnYS2f9_PZZgVwACL2oAAjbWyUqiyR5II6u6YDYE"
 bezumtsi_gif_id = "CgACAgIAAxkBAAE4zMtojLmiH_CGW5cT7G0QVXHR7D4g6wAC53UAApkBmEmM-VxqunRc6zYE"
 
-last_maxim_insult = 1.0
 last_gif_sent = 1.0
-maxim_insult_cooldown = 180.0
 gif_sent_cooldown = 180.0
 
 torch.manual_seed(0)
@@ -52,12 +50,8 @@ def edit_response(text: Optional[str]) -> Optional[str]:
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.message.chat_id == CHAT_ID:
         # response: Optional[str] = ""
-        global last_maxim_insult, last_gif_sent
-        if update.message.from_user.username == "WhoReadThisWillDie" and \
-                time.time() - last_maxim_insult >= maxim_insult_cooldown:
-            last_maxim_insult = time.time()
-            await context.bot.sendMessage(update.message.chat_id, "Максим, иди нахуй", reply_to_message_id=update.message.id)
-        elif "роман" in update.message.text.lower() and \
+        global last_gif_sent
+        if "роман" in update.message.text.lower() and \
                 time.time() - last_gif_sent >= gif_sent_cooldown:
             await context.bot.send_animation( chat_id=update.message.chat_id, animation=romantiki_gif_id)
             last_gif_sent = time.time()
@@ -85,7 +79,7 @@ def main() -> None:
     application = Application.builder().token(TOKEN).build()
 
     application.add_handler(MessageHandler(filters.TEXT, handle_message))
-    # application.add_error_handler(error)
+    application.add_error_handler(error)
 
     application.run_polling(allowed_updates=Update.ALL_TYPES)
 
