@@ -12,7 +12,22 @@
 
 `Три точки в верхнем правом углу` -> `Экспорт истории чата` -> `Формат: Машиночитаемый JSON` -> `Экспортировать`
 
-На выходе вы получите `json` файл для обучения
+На выходе вы получите `json`-файл для обучения
+
+- Для обучения `seq2seq` модели используйте метод `train()` класса `Seq2SeqChatbot`. Укажите путь к `json`-файлу в переменной `CHAT_HISTORY_PATH`. Запустите файл `./models/seq2seq/model.py` как модуль. Для этого в корне проекта выполните команду `python -m models.seq2seq.model`.
+
+- Для обучения `transformer` укажите путь к `json`-файлу в методе `prepare_data()` класса `FineTuner` в файле `./models/transformer/finetuner.py`. 
+### Пример:
+
+```python
+finetuner = FineTuner()
+dataset_path = finetuner.prepare_data()
+finetuner.fine_tune(dataset_path, output_name='fine_tuned_model_gpt_2')
+```
+
+Удобнее всего обучение производить в `ipynb`-блокнотах:
+- [seq2seq](https://www.youtube.com/watch?v=dQw4w9WgXcQ)
+- [transformer](https://www.youtube.com/watch?v=dQw4w9WgXcQ)
 
 ## Запуск
 Зависимости для сервера и телеграм-бота распологаются в `./requirements.txt`
@@ -31,7 +46,7 @@
 ### СПОСОБ 2 (Сервер)
   - Склонировать репозиторий на удаленный сервер
   - В `./server.py` указать нужную модель (на данный момент стоит transformer-версия)
-  - Запустить сервер командой `uvicorn server:app --host", "0.0.0.0", "--port", "<ПОРТ>"`
+  - Запустить сервер командой `uvicorn server:app --host 0.0.0.0 --port "<ПОРТ>"`
   - Также можно использовать данный Dockerfile (настроен для работы на huggingface spaces):
 
 ```Dockerfile
@@ -56,3 +71,6 @@ CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "7860"]
 ```
 
   - В файле `./bot_server.py` указать значения переменных среды (аналогично способу 1), а в функции `handel_response()` указать ссылку на веб-сервер
+
+## Результат
+Теперь, когда ЛИС полностью прознал все ваши секреты, которыми вы так бездумно делились в ваших чатах, пришло время сидеть и наслаждаться пёрлами ЛИСА
