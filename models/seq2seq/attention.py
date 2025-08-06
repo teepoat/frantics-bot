@@ -3,6 +3,7 @@ import torch.nn.functional as F
 import torch.nn as nn
 from .custom_types import Method
 
+
 class LuongAttention(nn.Module):
     def __init__(self, method: Method, hidden_size: int):
         super().__init__()

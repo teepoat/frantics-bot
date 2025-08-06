@@ -5,9 +5,10 @@ from collections import OrderedDict
 from .vocab import Vocab
 from .custom_types import Message, MessageId, Conversation
 from torch.nn.utils.rnn import pad_sequence
-from .custom_types import Token
+from .constants import PAD_TOKEN
 import re
 import json
+
 
 class ChatDataset(data.Dataset):
     def __init__(self, path: str, max_message_count: int = None, batch_size=5):
@@ -32,7 +33,7 @@ class ChatDataset(data.Dataset):
             batches_X.append(pad_sequence([self.vocab.sentence_indices(conversations[i+j][0] + ["<eos>"]) for j in range(self.batch_size) if i+j < len(conversations)], batch_first=True, padding_value=0))
             batches_y.append(pad_sequence([self.vocab.sentence_indices(conversations[i+j][1] + ["<eos>"]) for j in range(self.batch_size) if i+j < len(conversations)], batch_first=True, padding_value=0))
             lengths.append(torch.tensor([len(conversations[i+j][0]) for j in range(self.batch_size) if i+j < len(conversations)]))
-            mask.append(batches_y[-1] != Token.PAD_TOKEN.value)
+            mask.append(batches_y[-1] != PAD_TOKEN)
         return batches_X, batches_y, lengths, mask
 
     @classmethod

@@ -5,7 +5,8 @@ import torch.nn as nn
 import torch.optim as optim
 from .chat_dataset import ChatDataset
 from .attention import LuongAttention
-from .custom_types import Method, Token
+from .custom_types import Method
+from .constants import BOS_TOKEN
 from .vocab import Vocab
 from .searchers import GreedySearch
 import os
@@ -108,7 +109,7 @@ class Seq2SeqChatbot(nn.Module):
                 encoder_outputs, hidden = self.encoder(x_train, x_lengths) # Output shape: (batch_size, max_len_in_batch, hidden_size)
                 hidden = hidden[:self.decoder_num_layers]
                 loss = 0
-                decoder_input = torch.LongTensor([[Token.BOS_TOKEN.value] for _ in range(y_train.shape[0])])
+                decoder_input = torch.LongTensor([[BOS_TOKEN] for _ in range(y_train.shape[0])])
                 decoder_input = decoder_input.to(device)
                 use_teacher_forcing = random.random() < teacher_forcing_ratio
                 if use_teacher_forcing:

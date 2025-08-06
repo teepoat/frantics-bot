@@ -206,5 +206,5 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 
-models/seq2seq/data/train/*
-models/seq2seq/checkpoint/*
+models/*/data/*
+models/*/checkpoint/*

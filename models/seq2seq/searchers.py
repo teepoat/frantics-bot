@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
-from .custom_types import Token
+from .constants import BOS_TOKEN
+
 
 class GreedySearch(nn.Module):
     def __init__(self, encoder, decoder, embedding, device):
@@ -13,7 +14,7 @@ class GreedySearch(nn.Module):
     def forward(self, x, input_length, max_length):
         encoder_outputs, hidden = self.encoder(x, input_length)
         decoder_hidden = hidden[:self.decoder.num_layers]
-        decoder_input = torch.ones(1, 1, device=self.device, dtype=torch.long) * Token.BOS_TOKEN.value
+        decoder_input = torch.ones(1, 1, device=self.device, dtype=torch.long) * BOS_TOKEN
         all_tokens = torch.zeros([0], device=self.device, dtype=torch.long)
         all_scores = torch.zeros([0], device=self.device)
 
